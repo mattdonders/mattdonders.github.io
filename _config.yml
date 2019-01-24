@@ -1,0 +1,8 @@
+title: Matt Donders Development
+description: A webpage for all projects developed by Matt Donders.
+google_analytics: 
+show_downloads: true
+theme: jekyll-theme-midnight
+
+gems:
+  - jekyll-mentions
