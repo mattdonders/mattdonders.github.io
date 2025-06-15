@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Missions Parser</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .container {
+            max-width: 1400px;
+        }
+        .json-input {
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            min-height: 200px;
+        }
+        .table-container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            margin-top: 20px;
+        }
+        .status-completed {
+            background-color: #d4edda !important;
+            color: #155724;
+        }
+        .status-active {
+            background-color: #d1ecf1 !important;
+            color: #0c5460;
+        }
+        .status-upcoming {
+            background-color: #fff3cd !important;
+            color: #856404;
+        }
+        .table th {
+            background-color: #495057;
+            color: white;
+            text-align: center;
+            vertical-align: middle;
+            border: none;
+            padding: 12px 8px;
+            font-weight: 600;
+        }
+        .table td {
+            text-align: center;
+            vertical-align: middle;
+            padding: 12px 8px;
+            border-color: #dee2e6;
+            font-size: 0.85em;
+        }
+        .table-hover tbody tr:hover {
+            background-color: rgba(0, 0, 0, 0.075);
+        }
+        .error-message {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            border-radius: 5px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+        .success-message {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            border-radius: 5px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+        .header-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px 0;
+            margin-bottom: 30px;
+            border-radius: 0 0 15px 15px;
+        }
+        .btn-parse {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            padding: 12px 30px;
+            font-weight: 600;
+            border-radius: 25px;
+            transition: transform 0.2s;
+        }
+        .btn-parse:hover {
+            transform: translateY(-2px);
+            background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+        }
+        .mission-type-badge {
+            font-size: 0.8em;
+            padding: 4px 8px;
+            border-radius: 12px;
+        }
+        .download-section {
+            margin-top: 20px;
+            text-align: center;
+            padding: 15px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .btn-download {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            border: none;
+            padding: 10px 25px;
+            font-weight: 600;
+            border-radius: 20px;
+            transition: transform 0.2s;
+            color: white;
+        }
+        .btn-download:hover {
+            transform: translateY(-2px);
+            background: linear-gradient(135deg, #218838 0%, #1da589 100%);
+            color: white;
+        }
+        .btn-download:disabled {
+            background: #6c757d;
+            transform: none;
+            opacity: 0.6;
+        }
+        .grand-prize-row {
+            background: linear-gradient(45deg, #ffd700, #ffed4e) !important;
+            font-weight: bold;
+            color: #333;
+        }
+        .progress-bar-container {
+            width: 100%;
+            height: 20px;
+            background-color: #e9ecef;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #28a745, #20c997);
+            border-radius: 10px;
+            transition: width 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="header-section">
+        <div class="container">
+            <div class="row">
+                <div class="col-12 text-center">
+                    <h1><i class="fas fa-trophy"></i> Daily Missions Parser</h1>
+                    <p class="lead">Paste your JSON payload below to parse daily missions data</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-code"></i> JSON Input</h5>
+                    </div>
+                    <div class="card-body">
+                        <textarea class="form-control json-input" id="jsonInput" 
+                                  placeholder="Paste your JSON payload here..."></textarea>
+                        <div class="mt-3 text-center">
+                            <button class="btn btn-primary btn-parse" onclick="parseJSON()">
+                                <i class="fas fa-magic"></i> Parse Missions
+                            </button>
+                            <button class="btn btn-outline-secondary ms-2" onclick="loadSampleData()">
+                                <i class="fas fa-file-code"></i> Load Sample Data
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="output"></div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script>
+        function formatProgress(val) {
+            const valFloat = parseFloat(val);
+            if (Math.abs(valFloat - Math.round(valFloat)) < 1e-10) {
+                return valFloat.toLocaleString();
+            }
+            return valFloat.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+        function formatTimeLeft(timeLeftSeconds) {
+            const hours = Math.floor(timeLeftSeconds / 3600);
+            const minutes = Math.floor((timeLeftSeconds % 3600) / 60);
+            return `${hours}h ${minutes}m`;
+        }
+
+        function formatReward(mission) {
+            const packageData = mission.packageData || {};
+            const scCoin = packageData.scCoin || 0;
+            const bundleItems = packageData.bundleItems || [];
+
+            let reward = "";
+
+            if (scCoin > 0) {
+                reward = `${scCoin} SC`;
+                if (bundleItems.length > 0) {
+                    for (const item of bundleItems) {
+                        if (item.bundleType === "metagameToken" && item.bundlePayload?.currencyName) {
+                            const rewardAmount = item.bundlePayload.amount || 0;
+                            const rewardType = item.bundlePayload.currencyName.charAt(0).toUpperCase() + 
+                                            item.bundlePayload.currencyName.slice(1);
+                            reward += ` + ${rewardAmount} ${rewardType}`;
+                            break;
+                        }
+                    }
+                }
+            } else if (bundleItems.length > 0) {
+                const bundle = bundleItems[0];
+                const bundleType = bundle.bundleType || "N/A";
+                const bundlePayload = bundle.bundlePayload || {};
+
+                if (bundleType === "metagameToken") {
+                    const amount = bundlePayload.amount || 0;
+                    const currencyName = bundlePayload.currencyName || "Unknown";
+                    const formattedCurrency = currencyName.charAt(0).toUpperCase() + currencyName.slice(1);
+                    reward = `${amount} ${formattedCurrency}`;
+                } else {
+                    const bonusCode = bundlePayload.bonusCode || "N/A";
+                    const rounds = bundlePayload.rounds || "N/A";
+                    
+                    const bonusCodeMapping = {
+                        "pops": "Balloon Pop",
+                        "plink": "Plinko",
+                        "scratch": "Scratch Card",
+                        "wheel": "Wheel",
+                        "miner": "Miner",
+                        "puzzle": "Puzzle"
+                    };
+
+                    let mappedCode = bonusCode;
+                    for (const [key, value] of Object.entries(bonusCodeMapping)) {
+                        if (bonusCode.toLowerCase().includes(key)) {
+                            mappedCode = value;
+                            break;
+                        }
+                    }
+                    reward = `${mappedCode} (${rounds})`;
+                }
+            }
+
+            return reward || "N/A";
+        }
+
+        function getMissionTypeBadge(missionType) {
+            const typeMapping = {
+                'SPIN_X_TIMES': { text: 'Spin', class: 'bg-primary' },
+                'WIN_SUM_OF': { text: 'Win', class: 'bg-success' },
+                'BET_SUM_OF': { text: 'Bet', class: 'bg-warning text-dark' },
+                'GRAND PRIZE': { text: 'Grand Prize', class: 'bg-danger' }
+            };
+            
+            const mapping = typeMapping[missionType] || { text: missionType, class: 'bg-secondary' };
+            return `<span class="badge ${mapping.class} mission-type-badge">${mapping.text}</span>`;
+        }
+
+        function getProgressBar(progress, goal) {
+            const percentage = goal > 0 ? Math.min((progress / goal) * 100, 100) : 0;
+            const displayText = percentage > 15 ? `${percentage.toFixed(1)}%` : '';
+            
+            return `
+                <div class="progress-bar-container">
+                    <div class="progress-bar-fill" style="width: ${percentage}%;">
+                        ${displayText}
+                    </div>
+                </div>
+            `;
+        }
+
+        function parseJSON() {
+            const jsonInput = document.getElementById('jsonInput').value.trim();
+            const output = document.getElementById('output');
+
+            if (!jsonInput) {
+                showError('Please enter JSON data to parse.');
+                return;
+            }
+
+            try {
+                const jsonData = JSON.parse(jsonInput);
+                const missions = parseDailyMissions(jsonData);
+                
+                if (missions && missions.length > 0) {
+                    displayMissionsTable(missions);
+                    showSuccess(`Successfully parsed ${missions.length} missions!`);
+                } else {
+                    showError('No missions found in the provided JSON data.');
+                }
+            } catch (error) {
+                showError(`Invalid JSON format: ${error.message}`);
+            }
+        }
+
+        function parseDailyMissions(jsonData) {
+            try {
+                const scMissions = jsonData?.data?.data?.scMissions || [];
+                
+                if (scMissions.length === 0) {
+                    return null;
+                }
+
+                const missionsData = [];
+
+                // Process regular missions
+                for (const mission of scMissions) {
+                    const timeLeftSeconds = mission.timeLeft || 0;
+                    const timeLeftStr = formatTimeLeft(timeLeftSeconds);
+                    
+                    const completedAtMs = mission.completedAt;
+                    let completedAt = "N/A";
+                    if (completedAtMs && mission.status === "COMPLETED") {
+                        completedAt = new Date(completedAtMs).toLocaleString();
+                    }
+
+                    const missionData = {
+                        missionType: mission.missionType || 'Unknown',
+                        goal: mission.goal || 0,
+                        status: mission.status || 'Unknown',
+                        progress: Math.round((mission.progress || 0) * 100) / 100,
+                        gameName: mission.gameName || null,
+                        reward: formatReward(mission),
+                        startDate: mission.startDate || 'N/A',
+                        endDate: mission.endDate || 'N/A',
+                        timeLeft: timeLeftStr
+                    };
+                    missionsData.push(missionData);
+                }
+
+                // Add Grand Prize data
+                const grandPrizeData = jsonData?.data?.data?.scGrandPrize || {};
+                if (Object.keys(grandPrizeData).length > 0) {
+                    const grandPrizeSc = grandPrizeData.packageData?.scCoin || 0;
+                    const timeLeftSeconds = scMissions[0]?.timeLeft || 0;
+                    const timeLeftStr = formatTimeLeft(timeLeftSeconds);
+
+                    // SC Grand Prize
+                    const grandPrizeScMission = {
+                        missionType: 'GRAND PRIZE',
+                        goal: 0,
+                        status: 'UPCOMING',
+                        progress: 0,
+                        gameName: null,
+                        reward: `${grandPrizeSc} SC`,
+                        startDate: grandPrizeData.startDate || 'N/A',
+                        endDate: grandPrizeData.endDate || 'N/A',
+                        timeLeft: timeLeftStr
+                    };
+                    missionsData.push(grandPrizeScMission);
+
+                    // Bundle items Grand Prize
+                    const grandPrizeBundle = grandPrizeData.packageData?.bundleItems || [];
+                    if (grandPrizeBundle.length > 0) {
+                        const bundle = grandPrizeBundle[0];
+                        const bundleReward = formatReward({ packageData: { bundleItems: [bundle] } });
+                        
+                        const grandPrizeBundleMission = {
+                            missionType: 'GRAND PRIZE',
+                            goal: 0,
+                            status: 'UPCOMING',
+                            progress: 0,
+                            gameName: null,
+                            reward: bundleReward,
+                            startDate: grandPrizeData.startDate || 'N/A',
+                            endDate: grandPrizeData.endDate || 'N/A',
+                            timeLeft: timeLeftStr
+                        };
+                        missionsData.push(grandPrizeBundleMission);
+                    }
+                }
+
+                return missionsData;
+            } catch (error) {
+                console.error('Error parsing missions:', error);
+                return null;
+            }
+        }
+
+        function displayMissionsTable(missions) {
+            // Filter out missions with empty game names for the Game Name column check
+            const hasGameNames = missions.some(mission => mission.gameName && mission.gameName.trim() !== '');
+            
+            let tableHTML = `
+                <div class="table-container">
+                    <h4 class="p-3 mb-0"><i class="fas fa-list"></i> Daily SC Missions</h4>
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Mission Type</th>
+                                    <th>Goal</th>
+                                    <th>Status</th>
+                                    <th>Progress</th>
+                                    ${hasGameNames ? '<th>Game Name</th>' : ''}
+                                    <th>Reward</th>
+                                    <th>Start Date</th>
+                                    <th>End Date</th>
+                                    <th>Time Left</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+            `;
+
+            missions.forEach((mission, index) => {
+                const statusClass = mission.status === 'COMPLETED' ? 'status-completed' : 
+                                   mission.status === 'ACTIVE' ? 'status-active' : 'status-upcoming';
+                const isGrandPrize = mission.missionType === 'GRAND PRIZE';
+                const rowClass = isGrandPrize ? 'grand-prize-row' : '';
+                
+                tableHTML += `
+                    <tr class="${statusClass} ${rowClass}">
+                        <td><strong>${index + 1}</strong></td>
+                        <td>${getMissionTypeBadge(mission.missionType)}</td>
+                        <td>${formatProgress(mission.goal)}</td>
+                        <td><span class="badge bg-light text-dark">${mission.status}</span></td>
+                        <td>
+                            ${mission.goal > 0 ? getProgressBar(mission.progress, mission.goal) : formatProgress(mission.progress)}
+                        </td>
+                        ${hasGameNames ? `<td>${mission.gameName || '-'}</td>` : ''}
+                        <td><strong>${mission.reward}</strong></td>
+                        <td>${mission.startDate}</td>
+                        <td>${mission.endDate}</td>
+                        <td><i class="fas fa-clock"></i> ${mission.timeLeft}</td>
+                    </tr>
+                `;
+            });
+
+            tableHTML += `
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="download-section">
+                        <button class="btn btn-download" onclick="downloadTableImage()">
+                            <i class="fas fa-download"></i> Download Table as PNG
+                        </button>
+                        <small class="d-block mt-2 text-muted">
+                            <i class="fas fa-info-circle"></i> Click to save the table as an image file
+                        </small>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('output').innerHTML = tableHTML;
+        }
+
+        function showError(message) {
+            const output = document.getElementById('output');
+            output.innerHTML = `
+                <div class="error-message">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <strong>Error:</strong> ${message}
+                </div>
+            `;
+        }
+
+        function showSuccess(message) {
+            const existingMessage = document.querySelector('.success-message');
+            if (existingMessage) {
+                existingMessage.remove();
+            }
+
+            const successDiv = document.createElement('div');
+            successDiv.className = 'success-message';
+            successDiv.innerHTML = `
+                <i class="fas fa-check-circle"></i>
+                <strong>Success:</strong> ${message}
+            `;
+
+            const output = document.getElementById('output');
+            output.insertBefore(successDiv, output.firstChild);
+
+            setTimeout(() => {
+                successDiv.remove();
+            }, 3000);
+        }
+
+        function loadSampleData() {
+            const sampleData = {
+                "data": {
+                    "message": "Record get successfully",
+                    "success": true,
+                    "data": {
+                        "scMissions": [
+                            {
+                                "id": "46d790bd-4325-4805-ad9d-72b72bb2b246",
+                                "goal": 140,
+                                "missionType": "SPIN_X_TIMES",
+                                "startDate": "2025-06-14",
+                                "endDate": "2025-06-15",
+                                "packageData": {
+                                    "scCoin": 0,
+                                    "bundleItems": [
+                                        {
+                                            "bundleType": "metagameToken",
+                                            "bundlePayload": {
+                                                "amount": 1,
+                                                "coinType": "SC",
+                                                "currencyName": "puzzle"
+                                            }
+                                        }
+                                    ]
+                                },
+                                "gameName": "3 Big Barrels Buffalo",
+                                "status": "ACTIVE",
+                                "progress": 27,
+                                "timeLeft": 84163
+                            },
+                            {
+                                "id": "75fbff78-5291-40d6-9c2c-6d35652ef55d",
+                                "goal": 140,
+                                "missionType": "SPIN_X_TIMES",
+                                "startDate": "2025-06-14",
+                                "endDate": "2025-06-15",
+                                "packageData": {
+                                    "scCoin": 0,
+                                    "bundleItems": [
+                                        {
+                                            "bundleType": "metagameToken",
+                                            "bundlePayload": {
+                                                "amount": 1,
+                                                "currencyName": "puzzle"
+                                            }
+                                        }
+                                    ]
+                                },
+                                "gameName": "3 Big Barrels Buffalo",
+                                "status": "UPCOMING",
+                                "progress": 0,
+                                "timeLeft": 84163
+                            },
+                            {
+                                "id": "d9cd41fe-888e-4f3e-863f-268dd2684d21",
+                                "goal": 12000,
+                                "missionType": "WIN_SUM_OF",
+                                "startDate": "2025-06-14",
+                                "endDate": "2025-06-15",
+                                "packageData": {
+                                    "gcCoin": 600000,
+                                    "scCoin": 30,
+                                    "bundleItems": [
+                                        {
+                                            "bundleType": "metagameToken",
+                                            "bundlePayload": {
+                                                "amount": 3,
+                                                "currencyName": "puzzle"
+                                            }
+                                        }
+                                    ]
+                                },
+                                "status": "UPCOMING",
+                                "progress": 0,
+                                "timeLeft": 84163
+                            }
+                        ],
+                        "scGrandPrize": {
+                            "startDate": "2025-06-14",
+                            "endDate": "2025-06-15",
+                            "packageData": {
+                                "scCoin": 900,
+                                "bundleItems": [
+                                    {
+                                        "bundleType": "metagameToken",
+                                        "bundlePayload": {
+                                            "amount": 10,
+                                            "currencyName": "puzzle"
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                }
+            };
+
+            document.getElementById('jsonInput').value = JSON.stringify(sampleData, null, 2);
+        }
+
+        function downloadTableImage() {
+            const tableContainer = document.querySelector('.table-container');
+            const downloadBtn = document.querySelector('.btn-download');
+            
+            if (!tableContainer) {
+                alert('No table found to download. Please parse missions first.');
+                return;
+            }
+
+            // Disable button and show loading state
+            downloadBtn.disabled = true;
+            downloadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating Image...';
+
+            // Configure html2canvas options
+            const options = {
+                backgroundColor: '#ffffff',
+                scale: 2, // Higher resolution
+                useCORS: true,
+                allowTaint: true,
+                scrollX: 0,
+                scrollY: 0,
+                width: tableContainer.scrollWidth,
+                height: tableContainer.scrollHeight
+            };
+
+            html2canvas(tableContainer, options).then(canvas => {
+                // Create download link
+                const link = document.createElement('a');
+                link.download = `daily-missions-${new Date().toISOString().split('T')[0]}.png`;
+                link.href = canvas.toDataURL('image/png');
+                
+                // Trigger download
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+
+                // Reset button
+                downloadBtn.disabled = false;
+                downloadBtn.innerHTML = '<i class="fas fa-download"></i> Download Table as PNG';
+                
+                // Show success message
+                showSuccess('Table image downloaded successfully!');
+            }).catch(error => {
+                console.error('Error generating image:', error);
+                alert('Error generating image. Please try again.');
+                
+                // Reset button
+                downloadBtn.disabled = false;
+                downloadBtn.innerHTML = '<i class="fas fa-download"></i> Download Table as PNG';
+            });
+        }
+    </script>
+</body>
+</html>
